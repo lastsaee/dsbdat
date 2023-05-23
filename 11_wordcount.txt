@@ -1,3 +1,13 @@
+ssh localhost
+hdfs namenode -format
+start-all.sh
+
+hadoop fs -mkdir /input
+hadoop fs -put input.txt /input
+hadoop jar ABC.jar com.wordcount /input/input.txt /output
+hadoop fs -cat output/part-00000
+
+
 package com.wordcount;
 
 import java.io.IOException;
