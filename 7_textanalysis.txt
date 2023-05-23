@@ -1,0 +1,95 @@
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('averaged_perceptron_tagger')
+
+text= "Tokenization is the first step in text analytics. The process of breaking down a text paragraph into smaller chunks such as words or sentences is called Tokenization."
+
+from nltk.tokenize import sent_tokenize
+tokenized_text= sent_tokenize(text)
+print(tokenized_text)
+
+from nltk.tokenize import word_tokenize
+tokenized_word=word_tokenize(text)
+print(tokenized_word)
+
+from nltk import pos_tag
+pos_tags = pos_tag(tokenized_word)
+print(pos_tags)
+
+from nltk.corpus import stopwords
+stop_words = set(stopwords.words("english"))
+print(stop_words)
+print("*******")
+filtered_tokens = [token for token in tokenized_word if token.lower() not in stop_words]
+print(filtered_tokens)
+
+from nltk.stem import PorterStemmer
+stemmer = PorterStemmer()
+stemmed_tokens = [stemmer.stem(token) for token in filtered_tokens]
+print(stemmed_tokens)
+
+from nltk.stem import WordNetLemmatizer
+lemmatizer = WordNetLemmatizer()
+lemmatized_tokens = [lemmatizer.lemmatize(token) for token in filtered_tokens]
+print(lemmatized_tokens)
+
+print("Original Tokens:", tokenized_word)
+print("POS Tags:", pos_tags)
+print("Filtered Tokens (Stop Words Removal):", filtered_tokens)
+print("Stemmed Tokens:", stemmed_tokens)
+print("Lemmatized Tokens:", lemmatized_tokens)
+
+
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+documentA = 'Jupiter is the largest Planet'
+documentB = 'Mars is the fourth planet from the Sun'
+
+bagOfWordsA = documentA.split(' ')
+bagOfWordsB = documentB.split(' ')
+uniqueWords = set(bagOfWordsA).union(set(bagOfWordsB))
+
+numOfWordsA = dict.fromkeys(uniqueWords, 0)
+for word in bagOfWordsA:
+  numOfWordsA[word] += 1
+  numOfWordsB = dict.fromkeys(uniqueWords, 0)
+for word in bagOfWordsB:
+  numOfWordsB[word] += 1
+
+def computeTF(wordDict, bagOfWords):
+  tfDict = {}
+  bagOfWordsCount = len(bagOfWords)
+  for word, count in wordDict.items():
+   tfDict[word] = count / float(bagOfWordsCount)
+  return tfDict 
+tfA = computeTF(numOfWordsA, bagOfWordsA)
+tfB = computeTF(numOfWordsB, bagOfWordsB)
+
+import math
+def computeIDF(documents):
+    N = len(documents)
+    idfDict = dict.fromkeys(documents[0].keys(), 0)
+    for document in documents:
+        for word, val in document.items():
+            if val > 0:
+                idfDict[word] += 1
+    for word, val in idfDict.items():
+        idfDict[word] = math.log(N / float(val))
+    return idfDict
+
+idfs = computeIDF([numOfWordsA, numOfWordsB])
+
+def computeTFIDF(tfBagOfWords, idfs):
+    tfidf = {}
+    for word, val in tfBagOfWords.items():
+        tfidf[word] = val * idfs[word]
+    return tfidf
+
+tfidfA = computeTFIDF(tfA, idfs)
+tfidfB = computeTFIDF(tfB, idfs)
+
+df = pd.DataFrame([tfidfA, tfidfB])
+print(df)
+
